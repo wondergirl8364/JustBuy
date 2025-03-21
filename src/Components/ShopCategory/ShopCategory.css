@@ -1,0 +1,124 @@
+.shopcategory-banner{
+    display: block;
+    margin: 30px auto;
+    width: 100%;
+}
+.shopcategory-indexSort{
+    display: flex;
+    margin: 0px 170px;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.shopcategory-sort{
+    padding: 10px 20px;
+    border-radius: 40px;
+    border: 1px solid #888;
+}
+
+.shopcategory-indexSort p span{
+    font-weight: 600;
+}
+
+
+.shopcategory-loadmore{
+    display: flex;
+    justify-content: center;
+    margin: 150px auto;
+    align-items: center;
+    width: 233px;
+    height: 69px;
+    border-radius: 75px;
+    border: none;
+    background: #ff4141;
+    color: white;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.shopcategory-products {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 images per row */
+    gap: 15px; /* Adjust spacing between images */
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    max-width: 80%; /* Ensure it fits well within the page */
+    margin: 0 auto; /* Center content */
+}
+
+.shopcategory-products img {
+    width: 100%; /* Make images responsive */
+    max-width: 400px; /* Set a reasonable limit */
+    height: auto;
+    object-fit: cover;
+    border-radius: 0px; /* Remove rounded corners */
+    box-shadow: none; /* Remove shadow */
+    border: none; /* Remove border */
+}
+
+.shopcategory-products .item {
+    text-align: center;
+    background: none; /* Remove background */
+    padding: 0;
+    transition: none; /* Remove hover effect */
+}
+
+.product-prices {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  
+  .product-price-old {
+    text-decoration: line-through;
+    color: gray;
+    font-size: 14px;
+  }
+  
+  .product-price-new {
+    font-weight: bold;
+    color: #e60023; /* Red color for discounted price */
+    font-size: 16px;
+  }
+
+  /* Ensure each product item has a relative position */
+.product-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%; 
+    max-width: 350px;/* Adjust based on your layout */
+    padding: 10px;
+    text-align: center;
+  }
+  
+  /* Favorite button styling */
+  .favorite-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 2;
+  }
+  
+  .favorite-btn img {
+    width: 25px; /* Adjust size */
+    height: 25px;
+    opacity: 0.7; /* Default transparency */
+    transition: opacity 0.3s ease, transform 0.2s ease;
+  }
+  
+  .favorite-btn:hover img {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  
+  /* When product is favorited */
+  .favorite-btn.favorited img {
+    opacity: 1;
+  }
+  

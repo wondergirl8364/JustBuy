@@ -1,0 +1,140 @@
+/* CheckOutCredit.css */
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+  }
+  
+  .checkout-container {
+    display: flex;
+    justify-content: space-between;
+    padding: 40px;
+  }
+  
+  .checkout-left {
+    width: 55%;
+    background-color: white;
+    padding: 30px;
+    border-radius: 8px;
+  }
+  
+  .checkout-title {
+    font-size: 30px;
+    font-weight: bold;
+  }
+  
+  .checkout-steps {
+    font-size: 20px;
+    color: #6b7280;
+    margin: 10px 0;
+  }
+  
+  .active-step {
+    font-weight: bold;
+    color: black;
+  }
+  
+  /* Payment Method Buttons */
+  .payment-method {
+    display: flex;
+    margin-top: 20px;
+  }
+  
+  .payment-method button {
+    flex: 1;
+    padding: 10px;
+    border: 2px solid #000;
+    background-color: white;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+  }
+  
+  .payment-method button.active {
+    background-color: black;
+    color: white;
+  }
+  
+  .payment-method button:first-child {
+    border-right: none;
+  }
+  
+  .paypal-logo {
+    width: 150px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  
+  /* Payment Form */
+  .payment-form {
+    margin-top: 20px;
+  }
+  
+  .section-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  .input-field {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    box-sizing: border-box;
+    height: 100px;
+  }
+  
+  .input-row {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .save-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 15px 0;
+  }
+  
+  .toggle-switch {
+    width: 40px;
+    height: 20px;
+    background-color: #ccc;
+    border-radius: 20px;
+    position: relative;
+    cursor: pointer;
+  }
+  
+  .toggle-switch:checked {
+    background-color: black;
+  }
+  
+  .pay-button {
+    width: 100%;
+    padding: 12px;
+    background-color: black;
+    color: white;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 10px;
+  }
+  
+  .checkout-right {
+    width: 40%;
+    background-color: white;
+    padding: 30px;
+    border-radius: 8px;
+  }
+  
+  .cart-title {
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
