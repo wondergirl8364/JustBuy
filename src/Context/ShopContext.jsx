@@ -1,135 +1,223 @@
-import React, { useState, createContext } from "react";
+import React, { useState, useEffect, createContext } from "react";
+import axios from "axios";
 import all_product from "../Components/Assets/all_product";
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import "./ShopContext.css";
+import { jwtDecode } from 'jwt-decode';
 
 export const ShopContext = createContext(null);
 
-const getDefaultCart = () => {
-    let cart = {};
-    for (let index = 0; index < all_product.length + 1; index++) {
-        cart[index] = 0;
-    }
-    return cart;
-}
+// const userId = 1; // 🔒 Hardcoded user
 
 const ShopContextProvider = (props) => {
+  const [cartItems, setCartItems] = useState({});
+  const [favorites, setFavorites] = useState([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userId, setUserId] = useState(null);
 
-    const [cartItems, setCartItems] = useState(getDefaultCart());
-    const [favorites, setFavorites] = useState([]); // ✅ Initialize favorites as an empty array
-
-    const addToFavorites = (productId) => {
-        console.log("Adding to favorites:", productId);
-        toast.success('Item added to favorites!', {
-            position: 'top-right',
-            autoClose: 1000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-        });
-
-        if (!favorites.includes(productId)) {
-            setFavorites([...favorites,  all_product.find((product) => product.id === Number(productId)) ]);
+  useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (token) {
+          try {
+            const decoded = jwtDecode(token);
+            setUserId(decoded.userId || decoded.id || decoded.sub);
+            setIsLoggedIn(true);
+          } catch (err) {
+            console.error("Invalid token:", err);
+          }
         }
-        
-    };
+      }, []);
 
-    const removeFromFavorites = (productId) => {
-        console.log("Removing from favorites:", productId);
-        setFavorites(favorites.filter((product) => product.id !== productId));
-    };
+  // 🛒 Fetch cart items
+  const fetchCartItems = async () => {
+    try {
+      const res = await axios.get(`http://localhost:8081/api/cart/${userId}`);
+      const formatted = {};
+      res.data.forEach((item) => {
+        const key = `${item.Product_ID}_${item.Size}`;
+        formatted[key] = {
+          ...item,
+          quantity: item.Quantity,
+        };
+      });
+      setCartItems(formatted);
+    } catch (err) {
+      console.error("Error fetching cart items:", err.message);
+    }
+  };
 
+  // ❤️ Fetch favorites
+  const fetchFavorites = async () => {
+    try {
+      const res = await axios.get(`http://localhost:8081/api/favourites/${userId}`);
+      setFavorites(res.data); // expects array of full product objects
+    } catch (err) {
+      console.error("Error fetching favorites:", err.message);
+    }
+  };
 
-    const addToCart = (itemId, size) => {
-        const cartKey = `${itemId}_${size}`;
+  // useEffect(() => {
+  //   fetchCartItems();
+  //   fetchFavorites();
+  // }, []);
 
-        toast.success('Item added to cart!', {
-            position: 'top-right',
-            autoClose: 1000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true
-        });
+  useEffect(() => {
+    if (userId) {
+      fetchCartItems();
+      fetchFavorites();
+    }
+  }, [userId]);
+  
 
-        setCartItems((prev) => {
-            const updatedCart = {
-                ...prev,
-                [cartKey]: prev[cartKey]
-                    ? { ...prev[cartKey], quantity: prev[cartKey].quantity + 1 }
-                    : { quantity: 1, size }
-            };
+  // ➕ Add to cart
+  const addToCart = async (productId, size, color = "Default") => {
+    try {
+      await axios.post("http://localhost:8081/api/cart", {
+        User_ID: userId,
+        Product_ID: productId,
+        Quantity: 1,
+        Size: size,
+        Color: color,
+      });
+      toast.success("Item added to cart!", {
+        position: "top-right",
+        autoClose: 1000,
+        style: { width: "450px", height: "50px", marginRight: "-100px" },
+      });
+      fetchCartItems();
+    } catch (err) {
+      console.error("Error adding to cart:", err.message);
+    }
+  };
 
-            console.log("Updated Cart Items:", updatedCart);
-            return updatedCart;
-        });
-    };
+  const addProduct = async (productId, size) => {
+    const cartKey = `${productId}_${size}`;
+    const existing = cartItems[cartKey] || { quantity: 0, Color: "Default" };
+    await axios.post("http://localhost:8081/api/cart", {
+      User_ID: userId,
+      Product_ID: productId,
+      Quantity: 1,
+      Size: size,
+      Color: existing.Color,
+    });
+    fetchCartItems();
+  };
 
+  const removeFromCart = async (productId, size) => {
+    const cartKey = `${productId}_${size}`;
+    const existing = cartItems[cartKey];
+    if (!existing) return;
 
-    const removeFromCart = (itemId, size) => {
-        const cartKey = `${itemId}_${size}`;
+    if (existing.quantity === 1) {
+      await axios.delete(`http://localhost:8081/api/cart/${existing.Cart_ID}`);
+    } else {
+      await axios.put(`http://localhost:8081/api/cart/${existing.Cart_ID}`, {
+        Quantity: existing.quantity - 1,
+        Size: existing.Size,
+        Color: existing.Color,
+      });
+    }
+    fetchCartItems();
+  };
 
-        setCartItems((prev) => {
-            if (!prev[cartKey]) return prev;
+  // 💰 Total cart price
+  // const getTotalCartAmount = async () => {
+  //   try {
+  //     const res = await axios.get(`http://localhost:8081/api/cart/${userId}/total`);
+  //     return parseFloat(res.data.total).toFixed(2);
+  //   } catch (err) {
+  //     console.error("Error getting total cart amount:", err.message);
+  //     return "0.00";
+  //   }
+  // };
 
-            const updatedCart = { ...prev };
+  const getTotalCartAmount = async () => {
+    if (!userId) return "0.00";
+    try {
+      const res = await axios.get(`http://localhost:8081/api/cart/${userId}/total`);
+      return parseFloat(res.data.total).toFixed(2);
+    } catch (err) {
+      console.error("Error getting total cart amount:", err.message);
+      return "0.00";
+    }
+  };
+  
 
-            if (updatedCart[cartKey].quantity > 1) {
-                updatedCart[cartKey] = { ...updatedCart[cartKey], quantity: updatedCart[cartKey].quantity - 1 };
-            } else {
-                delete updatedCart[cartKey];
-            }
+  // 🧮 Total items
+  const getTotalCartItems = () => {
+    return Object.values(cartItems).reduce((acc, item) => acc + item.quantity, 0);
+  };
 
-            return updatedCart;
-        });
-    };
+  // ---------------- FAVORITES ----------------
 
+  const addToFavorites = async (productId) => {
+    try {
+      // Prevent duplicate add
+      const alreadyExists = favorites.some((fav) => fav.Product_ID === productId);
+      if (alreadyExists) return;
 
+      await axios.post("http://localhost:8081/api/favourites", {
+        User_ID: userId,
+        Product_ID: productId,
+      });
 
-    const getTotalCartAmount = () => {
-        let totalAmount = 0;
+      toast.success("Added to favorites!", {
+        position: "top-right",
+        autoClose: 1000,
+        style: { width: "450px", height: "50px", marginRight: "-100px" },
+      });
 
-        for (const key in cartItems) {
-            if (cartItems[key].quantity > 0) {
-                const [productId, size] = key.split("_");
-                let itemInfo = all_product.find((product) => product.id === Number(productId));
+      fetchFavorites();
+    } catch (err) {
+      console.error("Error adding to favorites:", err.message);
+    }
+  };
 
-                if (itemInfo) {
-                    totalAmount += itemInfo.new_price * cartItems[key].quantity;
-                }
-            }
-        }
+  const removeFromFavorites = async (productId) => {
+    try {
+      await axios.delete("http://localhost:8081/api/favourites", {
+        data: {
+          User_ID: userId,
+          Product_ID: productId,
+        },
+      });
 
-        return totalAmount.toFixed(2); // ✅ Format to 2 decimal places
-    };
+      toast.info("Removed from favorites.", {
+        position: "top-right",
+        autoClose: 1000,
+        style: { width: "450px", height: "50px", marginRight: "-100px" },
+      });
 
-    const getTotalCartItems = () => {
-        let totalItems = 0;
+      fetchFavorites();
+    } catch (err) {
+      console.error("Error removing from favorites:", err.message);
+    }
+  };
 
-        for (const key in cartItems) {
-            if (cartItems[key].quantity > 0) {
-                totalItems += cartItems[key].quantity;
-            }
-        }
+  const getTotalFavoriteItems = () => favorites.length;
 
-        return totalItems;
-    };
+  // ------------------------------------------------------
 
-    const getTotalFavoriteItems = () => {
-        return favorites.length; // ✅ Returns total favorite items count
-    };
-    
+  const contextValue = {
+    cartItems,
+    addToCart,
+    addProduct,
+    removeFromCart,
+    getTotalCartAmount,
+    getTotalCartItems,
+    all_product,
+    favorites,
+    addToFavorites,
+    removeFromFavorites,
+    getTotalFavoriteItems,
+  };
 
-    const contextValue = {
-        getTotalCartItems, getTotalCartAmount, all_product, cartItems, addToCart, removeFromCart, favorites,           // ✅ Expose favorites
-        addToFavorites, removeFromFavorites, getTotalFavoriteItems
-    };
-    return (
-        <ShopContext.Provider value={contextValue}>
-            {props.children}
-        </ShopContext.Provider>
-    )
-}
+  return (
+    <ShopContext.Provider value={contextValue}>
+      {props.children}
+    </ShopContext.Provider>
+  );
+};
 
 export default ShopContextProvider;

@@ -1,6 +1,7 @@
 .navbar {
     display: flex;
-    justify-content: space-around;
+    align-items: center; /* Align all navbar items */
+    justify-content: space-between;
     padding: 16px;
     box-shadow: 0 1px 3px -2px black;
 }
@@ -8,7 +9,7 @@
 .nav-logo {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 30px;
 }
 
 .nav-logo p {
@@ -21,7 +22,7 @@
     display: flex;
     align-items: center;
     list-style: none;
-    gap: 50px;
+    gap: 20px;
     color: #626262;
     font-size: 20px;
     font-weight: 500;
@@ -80,34 +81,60 @@
     background: red;
     color: white
 }
-
 .searchbar {
     display: flex;
     align-items: center;
-    width: 100%;
-    max-width: 400px;
-    margin: 20px auto;
+    width: 300px; 
+    height: 40px; 
+    border-radius: 8px; 
+    border: 1px solid #ccc;
+    background: white;
+    overflow: hidden; 
 }
 
-.searchbar input {
+/* Input Container */
+.search-input-container {
     flex: 1;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 8px 0 0 8px;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    padding-left: 10px;
+}
+
+/* Input Field */
+.searchbar input {
+    width: 100%;
+    border: none;
     outline: none;
     font-size: 16px;
+    background: transparent;
+    padding-right: 10px;
 }
 
+/* Search Button */
 .searchbar button {
-    padding: 10px 15px;
-    background-color: #ff4141;
+    padding: 8px 12px; /* Reduce button padding */
+    background-color: #FF4141;
     color: white;
     border: none;
-    border-radius: 0 8px 8px 0;
     cursor: pointer;
     font-size: 16px;
+    white-space: nowrap; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px; /* Adjust height to match input */
+    border-radius: 0; 
 }
 
+/* Reduce the image size inside the button */
+.searchbar button img {
+    width: 18px;  /* Smaller image size */
+    height: 18px;
+    filter: brightness(0) invert(1); /* Makes the icon white */
+}
+
+/* Button Hover Effect */
 .searchbar button:hover {
-    background-color: #45a049;
+    background-color: #D63A3A; /* Slightly darker red */
 }

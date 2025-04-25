@@ -1,58 +1,219 @@
-import React, { useContext, useState, useEffect } from "react";
+// import React, { useEffect, useState } from "react";
+// import "./ShopCategory.css";
+// import Item from "../Item/Item";
+// import { ToastContainer } from "react-toastify";
+
+// const ShopCategory = ({ category, banner, searchQuery }) => {
+//   const [products, setProducts] = useState([]);
+//   const [sortOption, setSortOption] = useState("default");
+//   const [showAll, setShowAll] = useState(false);
+
+//   // ✅ Category name to ID mapping
+//   const getCategoryId = (categoryName) => {
+//     const mapping = {
+//       men: 1,
+//       women: 2,
+//       kids: 3,
+//     };
+//     return mapping[categoryName.toLowerCase()] || 1;
+//   };
+
+//   // ✅ Fetch products and images
+//   const fetchProductsByCategory = async (categoryId) => {
+//     const res = await fetch(`http://localhost:8081/api/products/category/${categoryId}`);
+//     const data = await res.json();
+//     console.log(data);
+
+//     const enriched = await Promise.all(
+//       data.map(async (product) => {
+//         try {
+//           const imgRes = await fetch(`http://localhost:8081/api/products/images/${product.Product_ID}`);
+//           const imgData = await imgRes.json();
+//           const firstImage = imgData.images?.[0] || null;
+
+//           return {
+//             ...product,
+//             image: firstImage,
+//           };
+//         } catch (err) {
+//           console.error(`Error fetching image for product ${product.Product_ID}`, err);
+//           return { ...product, image: null };
+//         }
+//       })
+//     );
+
+//     return enriched;
+//   };
+
+//   // ✅ Fetch on mount / category change
+//   useEffect(() => {
+//     const loadProducts = async () => {
+//       const categoryId = getCategoryId(category);
+//       const fetched = await fetchProductsByCategory(categoryId);
+//       setProducts(fetched);
+//       setShowAll(false);
+//     };
+//     loadProducts();
+//   }, [category]);
+
+//   // ✅ Apply search filter
+//   let filteredProducts = [...products].filter((item) =>
+//     !searchQuery || item.Name.toLowerCase().includes(searchQuery.toLowerCase())
+//   );
+
+//   // ✅ Apply sorting
+//   switch (sortOption) {
+//     case "price-low":
+//       filteredProducts.sort((a, b) => a.Price - b.Price);
+//       break;
+//     case "price-high":
+//       filteredProducts.sort((a, b) => b.Price - a.Price);
+//       break;
+//     case "name":
+//       filteredProducts.sort((a, b) => a.Name.localeCompare(b.Name));
+//       break;
+//     default:
+//       break;
+//   }
+
+//   const initialProducts = filteredProducts.slice(0, 9);
+//   const remainingProducts = filteredProducts.slice(9);
+
+//   return (
+//     <div className="shop-category">
+//       <ToastContainer toastClassName="cart-toast" />
+//       <img className="shopcategory-banner" src={banner} alt="Category Banner" />
+
+//       {/* Sort & Filter Header */}
+//       <div className="shopcategory-indexSort">
+//         <p>
+//           <strong>
+//             Showing {showAll ? filteredProducts.length : initialProducts.length}
+//           </strong>{" "}
+//           out of <strong>{filteredProducts.length}</strong> products
+//         </p>
+//         <div className="shopcategory-sort">
+//           <label>Sort by:</label>
+//           <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
+//             <option value="default">Default</option>
+//             <option value="price-low">Price: Low to High</option>
+//             <option value="price-high">Price: High to Low</option>
+//             <option value="name">Alphabetical (A-Z)</option>
+//           </select>
+//         </div>
+//       </div>
+
+//       {/* Products Grid */}
+//       <div className="shopcategory-products">
+//         {[...(showAll ? filteredProducts : initialProducts)].map((item, i) => (
+//           <Item
+//             key={i}
+//             id={item.Product_ID}
+//             name={item.Name}
+//             image={item.image}
+//             new_price={item.Price}
+//             old_price={Math.round(item.Price * 1.2)} // optional mock old price
+//           />
+//         ))}
+//       </div>
+
+//       {/* "Explore More" Button */}
+//       {!showAll && remainingProducts.length > 0 && (
+//         <button className="shopcategory-loadmore" onClick={() => setShowAll(true)}>
+//           Explore More
+//         </button>
+//       )}
+//     </div>
+//   );
+// };
+
+// export default ShopCategory;
+
+
+import React, { useEffect, useState } from "react";
 import "./ShopCategory.css";
-import { ShopContext } from "../../Context/ShopContext";
-import { Link } from "react-router-dom";
-import favoriteIcon from "../Assets/favorite_icon.png"; // ✅ Import favorite icon
-import favoriteFilledIcon from "../Assets/fav_icon.png"; // ✅ Import filled heart icon
+import Item from "../Item/Item";
+import { ToastContainer } from "react-toastify";
 
 const ShopCategory = ({ category, banner, searchQuery }) => {
-  const { all_product } = useContext(ShopContext);
+  const [products, setProducts] = useState([]);
   const [sortOption, setSortOption] = useState("default");
   const [showAll, setShowAll] = useState(false);
-  const [favorites, setFavorites] = useState(new Set()); // ✅ Track favorites
 
+  // ✅ Category name to ID mapping with safe trimming
+  const getCategoryId = (categoryName) => {
+    const mapping = {
+      men: 1,
+      women: 2,
+      kids: 3,
+    };
+
+    if (!categoryName) return 1;
+
+    const cleaned = categoryName.trim().toLowerCase();
+    console.log("Here",cleaned);
+    // return mapping[cleaned] || 1;
+    return mapping[cleaned];
+  };
+
+  // ✅ Fetch products and their images
+  const fetchProductsByCategory = async (categoryId) => {
+    try {
+      const res = await fetch(`http://localhost:8081/api/products/category/${categoryId}`);
+      const data = await res.json();
+
+      const enriched = await Promise.all(
+        data.map(async (product) => {
+          try {
+            const imgRes = await fetch(`http://localhost:8081/api/products/images/${product.Product_ID}`);
+            const imgData = await imgRes.json();
+            const firstImage = imgData.images?.[0] || null;
+
+            return {
+              ...product,
+              image: firstImage,
+            };
+          } catch (err) {
+            console.error(`Error fetching image for product ${product.Product_ID}`, err);
+            return { ...product, image: null };
+          }
+        })
+      );
+
+      return enriched;
+    } catch (err) {
+      console.error("Error fetching products by category:", err);
+      return [];
+    }
+  };
+
+  // ✅ Load products on category change
   useEffect(() => {
-    setShowAll(false);
+    const loadProducts = async () => {
+      const categoryId = getCategoryId(category);
+      const fetched = await fetchProductsByCategory(categoryId);
+      setProducts(fetched);
+      setShowAll(false);
+    };
+
+    loadProducts();
   }, [category]);
 
-  const handleExploreMore = () => {
-    setShowAll(true);
-  };
-
-  // ✅ Toggle favorite status
-  const toggleFavorite = (itemId) => {
-    setFavorites((prevFavorites) => {
-      const newFavorites = new Set(prevFavorites);
-      if (newFavorites.has(itemId)) {
-        newFavorites.delete(itemId);
-      } else {
-        newFavorites.add(itemId);
-      }
-      return newFavorites;
-    });
-  };
-
-  // ✅ Filter products by category
-  const categoryProducts = all_product.filter(
-    (item) => item.category.toLowerCase() === category.toLowerCase()
+  // ✅ Filter by search query
+  let filteredProducts = [...products].filter((item) =>
+    !searchQuery || item.Name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // ✅ Apply search filter
-  let filteredProducts = [...categoryProducts].filter(
-    (item) =>
-      !searchQuery || item.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  // ✅ Sorting logic
+  // ✅ Sort logic
   switch (sortOption) {
     case "price-low":
-      filteredProducts.sort((a, b) => a.new_price - b.new_price);
+      filteredProducts.sort((a, b) => a.Price - b.Price);
       break;
     case "price-high":
-      filteredProducts.sort((a, b) => b.new_price - a.new_price);
+      filteredProducts.sort((a, b) => b.Price - a.Price);
       break;
     case "name":
-      filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
+      filteredProducts.sort((a, b) => a.Name.localeCompare(b.Name));
       break;
     default:
       break;
@@ -63,14 +224,16 @@ const ShopCategory = ({ category, banner, searchQuery }) => {
 
   return (
     <div className="shop-category">
+      <ToastContainer toastClassName="cart-toast" />
       <img className="shopcategory-banner" src={banner} alt="Category Banner" />
 
+      {/* Sort & Filter Header */}
       <div className="shopcategory-indexSort">
         <p>
           <strong>
             Showing {showAll ? filteredProducts.length : initialProducts.length}
-          </strong>
-          out of <strong>{categoryProducts.length}</strong> products
+          </strong>{" "}
+          out of <strong>{filteredProducts.length}</strong> products
         </p>
         <div className="shopcategory-sort">
           <label>Sort by:</label>
@@ -83,38 +246,23 @@ const ShopCategory = ({ category, banner, searchQuery }) => {
         </div>
       </div>
 
-      {/* ✅ Product List */}
+      {/* Product Grid */}
       <div className="shopcategory-products">
-        {[...(showAll ? filteredProducts : initialProducts)].map((item) => (
-          <div key={item.id} className="product-item">
-            <button 
-              className={`favorite-btn ${favorites.has(item.id) ? "favorited" : ""}`} 
-              onClick={() => toggleFavorite(item.id)}
-            >
-              <img 
-                src={favorites.has(item.id) ? favoriteFilledIcon : favoriteIcon} 
-                alt="Favorite" 
-              />
-            </button>
-
-            <Link to={`/product/${item.id}`}>
-              <img src={item.image} alt={item.name} className="product-image" />
-            </Link>
-            <p className="product-name">{item.name}</p>
-            <div className="product-prices">
-              {item.old_price && (
-                <p className="product-price-old">${item.old_price.toFixed(2)}</p>
-              )}
-              <p className="product-price-new">${item.new_price.toFixed(2)}</p>
-            </div>
-
-          </div>
+        {[...(showAll ? filteredProducts : initialProducts)].map((item, i) => (
+          <Item
+            key={i}
+            id={item.Product_ID}
+            name={item.Name}
+            image={item.image}
+            new_price={item.Price}
+            old_price={Math.round(item.Price * 1.2)}
+          />
         ))}
       </div>
 
-      {/* ✅ "Explore More" Button */}
+      {/* Load More Button */}
       {!showAll && remainingProducts.length > 0 && (
-        <button className="shopcategory-loadmore" onClick={handleExploreMore}>
+        <button className="shopcategory-loadmore" onClick={() => setShowAll(true)}>
           Explore More
         </button>
       )}
@@ -123,3 +271,4 @@ const ShopCategory = ({ category, banner, searchQuery }) => {
 };
 
 export default ShopCategory;
+

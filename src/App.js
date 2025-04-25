@@ -11,6 +11,7 @@ import Signup from './Pages/Signup';
 import men_banner from './Components/Assets/banner_mens.png';
 import women_banner from './Components/Assets/banner_women.png';
 import kid_banner from './Components/Assets/banner_kids.png';
+import MyOrders from './Pages/MyOrders';
 import ForgotPassword from './Pages/ForgotPassword';
 import ResetPassword from './Pages/ResetPassword';
 import ContactUs from './Pages/ContactUs'
@@ -21,12 +22,21 @@ import CheckOutPayment from './Pages/CheckOutPayment';
 import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { SearchNavBar } from './Components/SearchNavbar/SearchNavBar';
+import AccountSettings from './Pages/AccountSettings';
+import Company from './Components/FooterContent/Company';
+import Offices from './Components/FooterContent/Offices';
+import About from './Components/FooterContent/About';
+import Confirmation from './Components/NewsLetter/Confirmation';
+import HomeNavBar from './Components/HomeNavBar/HomeNavBar';
+import AdminDashboard from './Components/AdminDashboard/AdminDashboard';
+import ChatApp from './Pages/ChatApp';
+
 
 function App() {
 
   const [searchQuery, setSearchQuery] = useState("");
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/WDM_Team8">
       <MainContent searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
     </BrowserRouter>
   );
@@ -37,15 +47,23 @@ function MainContent({ searchQuery, setSearchQuery }) {
 
   const searchPages = ["/men", "/women", "/kids"];
   const isSearchNavbar = searchPages.some((path) => location.pathname.startsWith(path));
+  
+  // Simulating user login status (Replace with actual authentication logic)
+  const isLoggedIn = localStorage.getItem("token") !== null;  
 
   return (
     <div>
-      {isSearchNavbar ? ( <SearchNavBar onSearch={setSearchQuery} />) : (<Navbar />)}
+      {isLoggedIn ? (
+        isSearchNavbar ? <SearchNavBar onSearch={setSearchQuery} /> : <Navbar />
+      ) : (
+        <HomeNavBar />
+      )}
       <Routes>
+      <Route path="/orders" element={<MyOrders/>}></Route>
         <Route path='/' element={<Shop searchQuery={searchQuery} />}/>
         <Route path='/men' element={<ShopCategory banner={men_banner} category="Men" searchQuery={searchQuery}/>}/>
         <Route path='/women' element={<ShopCategory banner={women_banner}category="Women" searchQuery={searchQuery}/>}/>
-        <Route path='/kids' element={<ShopCategory banner={kid_banner} category="Kid" searchQuery={searchQuery}/>}/>
+        <Route path='/kids' element={<ShopCategory banner={kid_banner} category="Kids" searchQuery={searchQuery}/>}/>
         <Route path="/product" element={<Product/>}>
           <Route path=':productId' element={<Product/>}/>
         </Route>
@@ -53,12 +71,19 @@ function MainContent({ searchQuery, setSearchQuery }) {
         <Route path='/login' element={<Login/>}/>
         <Route path='/signup' element={<Signup/>}/>
         <Route path='/forgot-password' element={<ForgotPassword/>}/>
-        <Route path='/reset-password' element={<ResetPassword/>}/>
+        <Route path="/reset-password/:resetToken" element={<ResetPassword />} />
         <Route path='/contact-us' element={<ContactUs/>}/>
         <Route path="/favorites" element={<Favorites />} />
         <Route path="/checkout-address" element={<CheckOutAddress />} />
         <Route path="/checkout-shipping" element={<CheckOutShipping />} />
         <Route path="/checkout-payment" element={<CheckOutPayment />} />
+        <Route path="/user-settings" element={<AccountSettings />} />
+        <Route path="/company" element={<Company />} />
+        <Route path="/offices" element={<Offices />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/confirmation" element={<Confirmation />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/chat" element={<ChatApp />} />
       </Routes>
       <Footer/>
     </div>
