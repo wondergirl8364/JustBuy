@@ -4,8 +4,8 @@ import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import '../Styles/ChatApp.css'
 
-const socket = io('http://localhost:5000');
-axios.defaults.baseURL = 'http://localhost:5000';
+const socket = io('https://wdm-backend.onrender.com');
+axios.defaults.baseURL = 'https://wdm-backend.onrender.com';
 
 const ChatApp = () => {
   const [currentUser, setCurrentUser] = useState(null);

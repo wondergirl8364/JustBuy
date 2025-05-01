@@ -18,7 +18,7 @@ const ContactUs = () => {
     const { name, email, phone, message } = formData;
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/send-enquiry", {
+      const res = await fetch("https://wdm-backend.onrender.comapi/auth/send-enquiry", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

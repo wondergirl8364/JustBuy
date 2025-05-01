@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/WDM_Team8/static/css/main.9a6b6fe6.css",
-    "main.js": "/WDM_Team8/static/js/main.f0bf995a.js",
+    "main.css": "/WDM_Team8/static/css/main.2799089d.css",
+    "main.js": "/WDM_Team8/static/js/main.29df1720.js",
     "static/js/488.1f096a24.chunk.js": "/WDM_Team8/static/js/488.1f096a24.chunk.js",
     "static/media/PayPal.png": "/WDM_Team8/static/media/PayPal.f359a4749cb3373a8443.png",
     "static/media/banner_kids.png": "/WDM_Team8/static/media/banner_kids.fff815a581793a7380fb.png",
@@ -52,12 +52,12 @@
     "static/media/search-icon.svg": "/WDM_Team8/static/media/search-icon.f8e9d80588710a043b115ef6b30a2fd0.svg",
     "static/media/plus-icon.svg": "/WDM_Team8/static/media/plus-icon.9f3b0968530e2539409877db96b0ce09.svg",
     "static/media/minus-icon.svg": "/WDM_Team8/static/media/minus-icon.ef35168e0ccdfdc195ee9ca76f8b3da1.svg",
-    "main.9a6b6fe6.css.map": "/WDM_Team8/static/css/main.9a6b6fe6.css.map",
-    "main.f0bf995a.js.map": "/WDM_Team8/static/js/main.f0bf995a.js.map",
+    "main.2799089d.css.map": "/WDM_Team8/static/css/main.2799089d.css.map",
+    "main.29df1720.js.map": "/WDM_Team8/static/js/main.29df1720.js.map",
     "488.1f096a24.chunk.js.map": "/WDM_Team8/static/js/488.1f096a24.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.9a6b6fe6.css",
-    "static/js/main.f0bf995a.js"
+    "static/css/main.2799089d.css",
+    "static/js/main.29df1720.js"
   ]
 }

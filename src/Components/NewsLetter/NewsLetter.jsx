@@ -12,7 +12,7 @@ const NewsLetter = () => {
   
     if (emailRegex.test(email)) {
       try {
-        await axios.post("http://localhost:5000/api/auth/subscribe", { email });
+        await axios.post("https://wdm-backend.onrender.comapi/auth/subscribe", { email });
         navigate('/confirmation', { state: { email } });
       } catch (err) {
         console.error("Failed to subscribe:", err);

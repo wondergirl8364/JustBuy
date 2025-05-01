@@ -15,6 +15,15 @@ const ShopContextProvider = (props) => {
   const [favorites, setFavorites] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userId, setUserId] = useState(null);
+  const [promoCode, setPromoCode] = useState('');
+  const [discountAmount, setDiscountAmount] = useState(0); // discount in dollars
+  const [promo, setPromo] = useState({
+    applied: false,
+    code: "",
+    discount: 0,
+  });
+  
+
 
   useEffect(() => {
         const token = localStorage.getItem("token");
@@ -29,10 +38,47 @@ const ShopContextProvider = (props) => {
         }
       }, []);
 
+  const applyPromoCode = async (code) => {
+    if (!code || !userId) return;
+  
+    try {
+      const res = await axios.post("https://wdm-backend.onrender.com/api/auth/validate-promo", { promoCode:code });
+      console.log('RES:',res)
+      if (res.data.success) {        
+        const { discountPercentage } = res.data;
+        toast.success(`Promo applied! Discount: $${discountPercentage.toFixed(2)}`, {
+          position: "top-right",
+          autoClose: 1500,
+        });
+  
+        setPromo({
+          applied: true,
+          code,
+          discount: discountPercentage,
+        });
+      } else {
+        console.log('Entering else')
+        setPromo({ applied: false, code: "", discount: 0 });
+      }      
+    } catch (error) {
+      console.log('err:',error)
+      toast.error(`Promo error: ${error.response?.data?.message || error.message}`, {
+        position: "top-right",
+        autoClose: 2000,
+      });
+    }
+  };
+      
+  
+  const clearPromoCode = () => {
+    setPromoCode('');
+    setDiscountAmount(0);
+  };
+      
   // 🛒 Fetch cart items
   const fetchCartItems = async () => {
     try {
-      const res = await axios.get(`http://localhost:8081/api/cart/${userId}`);
+      const res = await axios.get(`https://wdm-backend.onrender.com/api/cart/${userId}`);
       const formatted = {};
       res.data.forEach((item) => {
         const key = `${item.Product_ID}_${item.Size}`;
@@ -50,7 +96,7 @@ const ShopContextProvider = (props) => {
   // ❤️ Fetch favorites
   const fetchFavorites = async () => {
     try {
-      const res = await axios.get(`http://localhost:8081/api/favourites/${userId}`);
+      const res = await axios.get(`https://wdm-backend.onrender.com/api/favourites/${userId}`);
       setFavorites(res.data); // expects array of full product objects
     } catch (err) {
       console.error("Error fetching favorites:", err.message);
@@ -73,7 +119,7 @@ const ShopContextProvider = (props) => {
   // ➕ Add to cart
   const addToCart = async (productId, size, color = "Default") => {
     try {
-      await axios.post("http://localhost:8081/api/cart", {
+      await axios.post("https://wdm-backend.onrender.com/api/cart", {
         User_ID: userId,
         Product_ID: productId,
         Quantity: 1,
@@ -94,7 +140,7 @@ const ShopContextProvider = (props) => {
   const addProduct = async (productId, size) => {
     const cartKey = `${productId}_${size}`;
     const existing = cartItems[cartKey] || { quantity: 0, Color: "Default" };
-    await axios.post("http://localhost:8081/api/cart", {
+    await axios.post("https://wdm-backend.onrender.com/api/cart", {
       User_ID: userId,
       Product_ID: productId,
       Quantity: 1,
@@ -110,9 +156,9 @@ const ShopContextProvider = (props) => {
     if (!existing) return;
 
     if (existing.quantity === 1) {
-      await axios.delete(`http://localhost:8081/api/cart/${existing.Cart_ID}`);
+      await axios.delete(`https://wdm-backend.onrender.com/api/cart/${existing.Cart_ID}`);
     } else {
-      await axios.put(`http://localhost:8081/api/cart/${existing.Cart_ID}`, {
+      await axios.put(`https://wdm-backend.onrender.com/api/cart/${existing.Cart_ID}`, {
         Quantity: existing.quantity - 1,
         Size: existing.Size,
         Color: existing.Color,
@@ -124,7 +170,7 @@ const ShopContextProvider = (props) => {
   // 💰 Total cart price
   // const getTotalCartAmount = async () => {
   //   try {
-  //     const res = await axios.get(`http://localhost:8081/api/cart/${userId}/total`);
+  //     const res = await axios.get(`https://wdm-backend.onrender.com/api/cart/${userId}/total`);
   //     return parseFloat(res.data.total).toFixed(2);
   //   } catch (err) {
   //     console.error("Error getting total cart amount:", err.message);
@@ -132,16 +178,35 @@ const ShopContextProvider = (props) => {
   //   }
   // };
 
-  const getTotalCartAmount = async () => {
+  const getTotalCartAmountBeforeDiscount = async () => {
     if (!userId) return "0.00";
     try {
-      const res = await axios.get(`http://localhost:8081/api/cart/${userId}/total`);
-      return parseFloat(res.data.total).toFixed(2);
+      const res = await axios.get(`https://wdm-backend.onrender.com/api/cart/${userId}/total`);
+      return parseFloat(res.data.total);
     } catch (err) {
       console.error("Error getting total cart amount:", err.message);
       return "0.00";
     }
   };
+
+  const getTotalCartAmount = async () => {
+    if (!userId) return "0.00";
+    try {
+      const res = await axios.get(`https://wdm-backend.onrender.com/api/cart/${userId}/total`);
+      let total = parseFloat(res.data.total);
+  
+      if (promo.applied) {
+        total -= (total * promo.discount / 100).toFixed(2);
+      }
+  
+      return total.toFixed(2);
+    } catch (err) {
+      console.error("Error getting total cart amount:", err.message);
+      return "0.00";
+    }
+  };
+  
+  
   
 
   // 🧮 Total items
@@ -157,7 +222,7 @@ const ShopContextProvider = (props) => {
       const alreadyExists = favorites.some((fav) => fav.Product_ID === productId);
       if (alreadyExists) return;
 
-      await axios.post("http://localhost:8081/api/favourites", {
+      await axios.post("https://wdm-backend.onrender.com/api/favourites", {
         User_ID: userId,
         Product_ID: productId,
       });
@@ -176,7 +241,7 @@ const ShopContextProvider = (props) => {
 
   const removeFromFavorites = async (productId) => {
     try {
-      await axios.delete("http://localhost:8081/api/favourites", {
+      await axios.delete("https://wdm-backend.onrender.com/api/favourites", {
         data: {
           User_ID: userId,
           Product_ID: productId,
@@ -211,6 +276,14 @@ const ShopContextProvider = (props) => {
     addToFavorites,
     removeFromFavorites,
     getTotalFavoriteItems,
+    fetchCartItems,
+    applyPromoCode,
+    clearPromoCode,
+    promoCode,
+    discountAmount,
+    isLoggedIn,
+    promo,
+    getTotalCartAmountBeforeDiscount
   };
 
   return (
